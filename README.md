@@ -21,6 +21,7 @@ Los datos provienen del Directorio Oficial de Establecimientos Educacionales pub
 │   └── 03_consultas.sql          # Consultas del análisis
 ├── notebooks/
 │   └── separacion_datos.ipynb    # Limpieza y separación de la fuente en tablas
+|   └── EDA.ipynb                 # Análisis de consultas
 ├── Datos/
 │   ├── ER_Directorio_Oficial_EE_WEB.pdf   # Diagrama entidad-relación
 │   └── tablas/                   # CSV procesados listos para poblar la BD
