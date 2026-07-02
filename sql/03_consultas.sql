@@ -49,40 +49,27 @@ ORDER BY estab_caros DESC
 
 ;
 --Pregunta 3
-WITH pago_ord AS (
-    SELECT e.rbd, es.s_rut,
-        CASE e.pago_mensual
-            WHEN 'GRATUITO'          THEN 0
-            WHEN '$1.000 A $10.000'  THEN 1
-            WHEN '$10.001 A $25.000' THEN 2
-            WHEN '$25.001 A $50.000' THEN 3
-            WHEN '$50.001 A $100.000' THEN 4
-            WHEN 'MAS DE $100.000'   THEN 5
-            ELSE NULL
-        END AS nivel_pago
+WITH sost AS (
+    SELECT es.s_rut, COUNT(*) AS n_estab
+    FROM establecimiento_sostenedor es
+    GROUP BY es.s_rut
+),
+base AS (
+    SELECT
+        CASE WHEN s.n_estab = 1 THEN '1'
+             WHEN s.n_estab BETWEEN 2 AND 5  THEN '2-5'
+             WHEN s.n_estab BETWEEN 6 AND 20 THEN '6-20'
+             ELSE '20+' END AS tramo_concentracion,
+        e.pago_mensual
     FROM establecimiento e
     JOIN establecimiento_sostenedor es ON es.e_rbd = e.rbd
-),
-sost AS (
-    SELECT s_rut,
-           COUNT(*) AS n_estab,
-           AVG(nivel_pago) AS pago_promedio
-    FROM pago_ord
-    WHERE nivel_pago IS NOT NULL
-    GROUP BY s_rut
+    JOIN sost s ON s.s_rut = es.s_rut
+    WHERE e.pago_mensual IS NOT NULL
+      AND e.pago_mensual <> 'SIN INFORMACION'
 )
-SELECT
-    CASE
-        WHEN n_estab = 1            THEN '1'
-        WHEN n_estab BETWEEN 2 AND 5  THEN '2-5'
-        WHEN n_estab BETWEEN 6 AND 20 THEN '6-20'
-        ELSE '20+'
-    END AS tramo_concentracion,
-    COUNT(*)                 AS n_sostenedores,
-    ROUND(AVG(pago_promedio), 3) AS pago_ordinal_medio
-FROM sost
-GROUP BY 1
-ORDER BY MIN(n_estab)
+SELECT tramo_concentracion, pago_mensual, COUNT(*) AS n
+FROM base
+GROUP BY tramo_concentracion, pago_mensual;
 ;
 --Pregunta 4
 SELECT
